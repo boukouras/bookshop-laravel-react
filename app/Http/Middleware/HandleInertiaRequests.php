@@ -36,24 +36,43 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
         return [
             ...parent::share($request),
-            'cart' => fn () => $this->getCart($request),
+            'cart' => fn() => $this->getCart($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'addresses' => $user->addresses,
+                ],
             ],
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'categories' => fn() => Category::get()
         ];
     }
 
-    protected function getCart(Request $request): ?Cart {
+    protected function getCart(Request $request): ?Cart
+    {
         if (auth()->check()) {
             return Cart::query()->where('user_id', auth()->id())->where('status', 'active')->with('items.product')->first();
         }
         $guestToken = $request->cookie('cart_token');
-        if (!$guestToken) {return null;}
-        return Cart::query()->where('guest_token', $guestToken)->where('status', 'active')->with('items.product')->first();
+        if (!$guestToken) {
+            return null;
+        }
+        return Cart::query()->where('guest_token', $guestToken)->where('status', 'active')->with(
+
+            'items.product',
+            'items.product.authors',
+            'items.product.publishers',
+            'items.product.languages',
+            'items.product.tags',
+            'items.product.images',
+            'items.product.reviews',
+            'items.product.categories',
+        )->first();
     }
 }

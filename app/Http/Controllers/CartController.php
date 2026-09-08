@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
+use App\Services\CartService;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class CartController extends Controller
 {
@@ -45,8 +45,17 @@ class CartController extends Controller
     {
         //
         $cart = $this->getCart($request);
-        $cart->load(['items.product',]);
-        return inertia('client/cart/cart', ['cart' => $cart,]);
+        $cart->load([
+            'items.product',
+            'items.product.authors',
+            'items.product.publishers',
+            'items.product.languages',
+            'items.product.tags',
+            'items.product.images',
+            'items.product.reviews',
+            'items.product.categories',
+        ]);
+        return Inertia::render('client/cart/cart', ['cart' => $cart,]);
 
     }
 
@@ -56,9 +65,13 @@ class CartController extends Controller
             'product_id' => [
                 'required',
                 'integer',
-                'exists:products,id'
+                'exists:products,id',
             ],
-            'quantity' => ['required', 'integer', 'min:1'],
+            'quantity' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
         ]);
         $product = Product::findOrFail($data['product_id']);
         // Product must be active.
@@ -69,11 +82,13 @@ class CartController extends Controller
         }
         $cart = $this->getCart($request);
         $item = $cart->items()->where('product_id', $product->id)->first();
+        $newQuantity = ($item?->quantity ?? 0) + $data['quantity'];
+
+        // Check total quantity against stock.
+        if ($product->stock !== null && $newQuantity > $product->stock) {
+            abort(422, 'Not enough stock available.');
+        }
         if ($item) {
-            $newQuantity = $item->quantity + $data['quantity'];
-            if ($product->stock !== null && $newQuantity > $product->stock) {
-                abort(422, 'Not enough stock available.');
-            }
             $item->update(['quantity' => $newQuantity,]);
         } else {
             $cart->items()->create(['product_id' => $product->id, 'quantity' => $data['quantity'],]);
@@ -126,17 +141,37 @@ class CartController extends Controller
 
     protected function getCart(Request $request): Cart
     {
-        if (auth()->check()) {
-            return Cart::firstOrCreate(['user_id' => auth()->id(), 'status' => 'active',]);
+        if ($request->user()) {
+            $cart = Cart::firstOrCreate([
+                'user_id' => $request->user()->id,
+                'status' => 'active',
+            ]);
+        } else {
+            $guestToken = $request->cookie('cart_token');
+            if (!$guestToken) {
+                $guestToken = (string) Str::uuid();
+                cookie()->queue(
+                    cookie('cart_token', $guestToken, 60 * 24 * 30, '/', null, app()->environment('production'), true, false, 'lax')
+                );
+            }
+
+            $cart = Cart::firstOrCreate([
+                'guest_token' => $guestToken,
+                'status' => 'active',
+            ]);
         }
-        $guestToken = $request->cookie('cart_token');
-        if (!$guestToken) {
-            $guestToken = (string) Str::uuid();
-        }
-        $cart = Cart::firstOrCreate(['guest_token' => $guestToken, 'status' => 'active',]);
-        if (!$request->hasCookie('cart_token')) {
-            cookie()->queue(cookie('cart_token', $guestToken, 60 * 24 * 30, '/', null, app()->environment('production'), true, false, 'lax'));
-        }
+
+        $cart->load([
+            'items.product',
+            'items.product.authors',
+            'items.product.publishers',
+            'items.product.languages',
+            'items.product.tags',
+            'items.product.images',
+            'items.product.reviews',
+            'items.product.categories',
+        ]);
+
         return $cart;
     }
 

@@ -72,7 +72,7 @@ class User extends Authenticatable implements PasskeyUser
 
     public function orders(): HasMany { return $this->hasMany(Order::class); }
 
-    public function addresses(): HasMany { return $this->hasMany(Address::class); }
+    public function addresses(): HasOne { return $this->hasOne(Address::class); }
 
     public function isAdmin(): bool { return $this->is_admin; }
 }

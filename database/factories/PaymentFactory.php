@@ -22,7 +22,7 @@ class PaymentFactory extends Factory
         return [
             //
             'order_id' => Order::factory(),
-            'payment_method_id' => PaymentMethod::factory(),
+            'payment_method_id' => PaymentMethod::query()->inRandomOrder()->value('id'),
             'transaction_id' => fake()->uuid(),
             'amount' => fake()->randomFloat(2,10,200),
             'currency' => 'EUR',

@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Coupon extends Model
 {
@@ -26,31 +26,25 @@ class Coupon extends Model
         'status',
     ];
 
-
     protected function casts(): array
     {
         return [
             'value' => 'decimal:2',
             'min_order_amount' => 'decimal:2',
             'max_discount' => 'decimal:2',
+            'usage_limit' => 'integer',
+            'used_count' => 'integer',
+            'per_user_limit' => 'integer',
             'starts_at' => 'datetime',
             'expires_at' => 'datetime',
         ];
     }
 
-
-    /**
-     * Orders that used this coupon.
-     */
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }
 
-
-    /**
-     * Check if coupon is active.
-     */
     public function isActive(): bool
     {
         return $this->status === 'active'
@@ -58,41 +52,32 @@ class Coupon extends Model
             && (!$this->expires_at || now()->lessThanOrEqualTo($this->expires_at));
     }
 
-
-    /**
-     * Check if coupon has remaining uses.
-     */
     public function hasAvailableUses(): bool
     {
-        if (is_null($this->usage_limit)) {
-            return true;
-        }
-
-        return $this->used_count < $this->usage_limit;
+        return is_null($this->usage_limit)
+            || $this->used_count < $this->usage_limit;
     }
 
-
-    /**
-     * Calculate discount amount.
-     */
     public function calculateDiscount(float $amount): float
     {
         if (!$this->isActive()) {
             return 0;
         }
 
-        if ($this->min_order_amount &&
-            $amount < $this->min_order_amount) {
+        if (
+            $this->min_order_amount !== null &&
+            $amount < (float) $this->min_order_amount
+        ) {
             return 0;
         }
 
         if ($this->type === 'percentage') {
-            $discount = $amount * ($this->value / 100);
+            $discount = $amount * ((float) $this->value / 100);
 
-            if ($this->max_discount) {
+            if ($this->max_discount !== null) {
                 $discount = min(
                     $discount,
-                    $this->max_discount
+                    (float) $this->max_discount
                 );
             }
 
@@ -100,7 +85,7 @@ class Coupon extends Model
         }
 
         return round(
-            min($this->value, $amount),
+            min((float) $this->value, $amount),
             2
         );
     }

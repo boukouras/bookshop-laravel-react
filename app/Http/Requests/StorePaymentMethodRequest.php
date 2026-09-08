@@ -12,7 +12,7 @@ class StorePaymentMethodRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,6 +24,12 @@ class StorePaymentMethodRequest extends FormRequest
     {
         return [
             //
+            'name',
+            'slug',
+            'provider',
+            'icon',
+            'description',
+            'status',
         ];
     }
 }

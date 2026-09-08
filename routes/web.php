@@ -95,12 +95,18 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::prefix('cart')->name('cart')->group(function () {
-    Route::get('/', [CartController::class, 'show'])->name('Show');
+    Route::get('/', [ClientController::class, 'cart'])->name('cart');
+    Route::get('/checkout', [ClientController::class, 'checkout'])->name('CheckOut');
+    Route::post('/checkout', [OrderController::class, 'store'])->name('StoreOrder');
+    Route::post('/checkout/coupon', [CouponController::class, 'apply'])->name('CartCouponApply');
     Route::post('/items', [CartController::class, 'add'])->name('Add');
     Route::patch('/items/{item}', [CartController::class, 'updateItem'])->name('ItemsUpdate');
     Route::delete('/items/{item}', [CartController::class, 'removeItem'])->name('ItemsRemove');
     Route::delete('/', [CartController::class, 'clear'])->name('Clear');
 });
+
+
+Route::get('/orders/{order}', [ClientController::class, 'completed'])->name('CompletedOrder');
 
 Route::prefix('/')->group(function () {
     Route::get('/', [ClientController::class, 'home'])->name('home');

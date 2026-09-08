@@ -109,7 +109,47 @@ class DatabaseSeeder extends Seeder
         | Payments / Shipping
         |--------------------------------------------------------------------------
         */
-        PaymentMethod::factory(5)->create();
+        $paymentMethods = [
+            [
+                'name' => 'Credit Card',
+                'slug' => 'credit_card',
+                'provider' => 'stripe',
+                'cost' => 0,
+                'icon' => null,
+                'description' => 'Pay with your card online with SSL.',
+                'status' => 'active',
+            ],
+            [
+                'name' => 'PayPal',
+                'slug' => 'paypal',
+                'provider' => 'paypal',
+                'cost' => 0,
+                'icon' => null,
+                'description' => 'Now you can pay with your PayPal Account.',
+                'status' => 'active',
+            ],
+            [
+                'name' => 'Bank Transfer',
+                'slug' => 'bank_transfer',
+                'provider' => 'bank',
+                'cost' => 0,
+                'icon' => null,
+                'description' => 'You can pay with bank tranfer but your have to send us your bank bill of transfer to start the process of shipment.',
+                'status' => 'active',
+            ],
+            [
+                'name' => 'Cash on Delivery',
+                'slug' => 'cash_on_delivery',
+                'provider' => 'cod',
+                'cost' => 3,
+                'icon' => null,
+                'description' => "You can pay at delivery.",
+                'status' => 'active',
+            ],
+        ];
+        foreach($paymentMethods as $paymentMethod) {
+            PaymentMethod::create($paymentMethod);
+        }
         ShippingMethod::factory(5)->create();
         /*
         |--------------------------------------------------------------------------

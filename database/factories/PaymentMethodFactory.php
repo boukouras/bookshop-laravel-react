@@ -19,12 +19,6 @@ class PaymentMethodFactory extends Factory
     {
         return [
             //
-            'name' => fake()->randomElement(['Credit Card','PayPal','Bank Transfer','Cash on Delivery',]),
-            'slug' => fake()->unique()->slug(),
-            'provider' => fake()->randomElement(['stripe','paypal','bank','cod',]),
-            'icon' => null,
-            'description' => fake()->sentence(),
-            'status' => 'active',
         ];
     }
 

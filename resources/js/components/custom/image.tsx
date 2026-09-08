@@ -1,23 +1,12 @@
 import React from "react";
 
-export function Image({
-    src,
-    alt = "",
-    ...props
-}: React.ImgHTMLAttributes<HTMLImageElement>) {
-
+export function Image({src,alt = "", ...props}: React.ImgHTMLAttributes<HTMLImageElement>) {
     const defaultImage = "/storage/images/products/default.jpg";
-
     const getImageUrl = (image?: string | null) => {
-
-        if (!image) {
-            return defaultImage;
-        }
+        if (!image) { return defaultImage; }
 
         // External URL
-        if (image.startsWith("http://") || image.startsWith("https://")) {
-            return image;
-        }
+        if (image.startsWith("http://") || image.startsWith("https://")) { return image; }
 
         // Remove leading slash
         image = image.replace(/^\/+/, "");

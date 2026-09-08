@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateOrderRequest;
 use App\Models\Product;
 use App\Models\Tag;
 use App\Support\AdminListQuery;
+use App\Services\CheckoutService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -43,9 +44,12 @@ class OrderController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreOrderRequest $request)
+    public function store(StoreOrderRequest $request, CheckoutService $checkoutService): RedirectResponse
     {
-        //
+        $order = $checkoutService->createOrder($request, $request->validated(), );
+        return redirect()->route('CompletedOrder', [
+            'order' => $order->id,
+        ]);
     }
 
     /**

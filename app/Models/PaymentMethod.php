@@ -17,10 +17,16 @@ class PaymentMethod extends Model
         'provider',
         'icon',
         'description',
+        'cost',
         'status',
     ];
 
-
+    protected function casts(): array
+    {
+        return [
+            'cost' => 'decimal:2',
+        ];
+    }
     /**
      * Payments made using this method.
      */
@@ -36,5 +42,10 @@ class PaymentMethod extends Model
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    public function cost(): float
+    {
+        return (float) $this->cost;
     }
 }

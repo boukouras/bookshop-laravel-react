@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ShoppingBag, Star, ArrowRight } from 'lucide-react'
 import { ProductCard } from "../products/product-card";
 import { HeroCarousel } from "./hero-carousel";
+import { Link } from "@inertiajs/react";
 export function Hero({ products }: { products: Product[] }) {
     return (
         <section className="flex w-full items-center justify-center">
@@ -26,23 +27,15 @@ export function Hero({ products }: { products: Product[] }) {
                                 comfort, and innovation with our exclusive collection.
                             </p>
                             <div className='mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center xl:justify-start'>
-                                <Button size='lg' className='group relative cursor-pointer overflow-hidden px-8 py-6 text-base font-medium'>
-                                    <span className='relative z-10 flex items-center gap-2'>
-                                        Shop Now
-                                        <ArrowRight className='transition-transform group-hover:translate-x-1' />
-                                    </span>
-                                    <span className='bg-primary/5 absolute inset-0 -z-0 opacity-0 transition-opacity group-hover:opacity-100'></span>
-                                </Button>
-                                <Button
-                                    variant='outline'
-                                    size='lg'
-                                    className='group relative cursor-pointer overflow-hidden px-8 py-6 text-base font-medium'
-                                >
-                                    <span className='relative z-10 flex items-center gap-2'>
-                                        <ShoppingBag />
-                                        View Offers
-                                    </span>
-                                </Button>
+                                <Link href={'/products'}>
+                                    <Button size='lg' className='group relative cursor-pointer overflow-hidden px-8 py-6 text-base font-medium'>
+                                        <span className='relative z-10 flex items-center gap-2'>
+                                            Shop Now
+                                            <ArrowRight className='transition-transform group-hover:translate-x-1' />
+                                        </span>
+                                        <span className='bg-primary/5 absolute inset-0 -z-0 opacity-0 transition-opacity group-hover:opacity-100'></span>
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
 
@@ -52,7 +45,7 @@ export function Hero({ products }: { products: Product[] }) {
                                 {/* {products.map(product => (
                                     <ProductCard product={product} baseUrl={`categories/${'fantasy'}`} />
                                 ))} */}
-                                
+
                                 <HeroCarousel featureds={products} />
                             </div>
                         </div>

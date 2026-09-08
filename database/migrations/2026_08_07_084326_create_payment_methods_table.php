@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('provider', 100);
             $table->string('icon', 255)->nullable();
             $table->text('description')->nullable();
+            $table->decimal('cost')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
             $table->softDeletes();

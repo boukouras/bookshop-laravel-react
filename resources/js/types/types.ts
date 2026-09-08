@@ -201,6 +201,7 @@ export interface PaymentMethod {
     name: string;
     slug: string;
     provider: string;
+    cost: number;
     icon: string | null;
     description: string | null;
     status: 'active' | 'inactive';
@@ -266,6 +267,13 @@ export interface Order {
     payments?: Payment[];
     addresses?: OrderAddress[];
     shipments?: Shipment[];
+    info?: OrderInfo;
+}
+export interface OrderInfo {
+    fname: string;
+    lname: string;
+    email: string;
+    phone: string;
 }
 export interface OrderItem {
     id: number;

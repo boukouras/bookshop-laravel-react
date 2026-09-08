@@ -3,8 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Author;
+use App\Models\Cart;
+use App\Models\Order;
+use App\Models\PaymentMethod;
 use App\Models\Publisher;
+use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Support\AdminListQuery;
@@ -29,6 +34,104 @@ class ClientController extends Controller
             ->get();
         return Inertia::render('client/welcome', [
             'featureds' => $products,
+        ]);
+    }
+    public function checkout(Request $request): Response
+    {
+        if ($request->user()) {
+            $cart = Cart::firstOrCreate([
+                'user_id' => $request->user()->id,
+                'status' => 'active',
+            ]);
+        } else {
+            $guestToken = $request->cookie('cart_token');
+            if (!$guestToken) {
+                $guestToken = (string) Str::uuid();
+                cookie()->queue(
+                    cookie('cart_token', $guestToken, 60 * 24 * 30, '/', null, app()->environment('production'), true, false, 'lax')
+                );
+            }
+
+            $cart = Cart::firstOrCreate([
+                'guest_token' => $guestToken,
+                'status' => 'active',
+            ]);
+        }
+
+        $cart->load([
+            'items.product',
+            'items.product.authors',
+            'items.product.publishers',
+            'items.product.languages',
+            'items.product.tags',
+            'items.product.images',
+            'items.product.reviews',
+            'items.product.categories',
+        ]);
+
+        $shippinhMethod = ShippingMethod::get();
+        $paymentMethod = PaymentMethod::get();
+
+        return Inertia::render('client/cart/checkout', [
+            'cart' => $cart,
+            'paymentMethods' => $paymentMethod,
+            'shippingMethods' => $shippinhMethod
+        ]);
+    }
+    public function completed(Order $order): Response
+    {
+        $order->load([
+            'addresses',
+            'info',
+            'user',
+            'coupon',
+            'shippingMethod',
+            'items',
+            'items.product',
+            'payments',
+            'payments.paymentMethod',
+            'shipments',
+        ]);
+
+        return Inertia::render('client/cart/completed', [
+            'order' => $order,
+        ]);
+    }
+    public function cart(Request $request): Response
+    {
+        if ($request->user()) {
+            $cart = Cart::firstOrCreate([
+                'user_id' => $request->user()->id,
+                'status' => 'active',
+            ]);
+        } else {
+            $guestToken = $request->cookie('cart_token');
+            if (!$guestToken) {
+                $guestToken = (string) Str::uuid();
+                cookie()->queue(
+                    cookie('cart_token', $guestToken, 60 * 24 * 30, '/', null, app()->environment('production'), true, false, 'lax')
+                );
+            }
+
+            $cart = Cart::firstOrCreate([
+                'guest_token' => $guestToken,
+                'status' => 'active',
+            ]);
+        }
+
+        $cart->load([
+            'items.product',
+            'items.product.authors',
+            'items.product.publishers',
+            'items.product.languages',
+            'items.product.tags',
+            'items.product.images',
+            'items.product.reviews',
+            'items.product.categories',
+        ]);
+
+        return Inertia::render('client/cart/cart', [
+            'cart' => $cart
         ]);
     }
     public function category(string $category): Response
